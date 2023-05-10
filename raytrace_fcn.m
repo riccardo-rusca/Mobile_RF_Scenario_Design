@@ -2,7 +2,7 @@ function [tap_gains,tap_delays]=raytrace_fcn(lat, lon, veh_antenna_h, veh_txpwr_
     
     TXPOWER=veh_txpwr_dBm; % In dBm
     TXPOWER_WATT=veh_txpwr_watt; % In W
-    %% Tx power set to 23 dBm according to: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9252895
+    % Tx power set to 23 dBm according to: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9252895
     
     tx = txsite("Name", "Car", ...
         "Latitude", lat, ...
@@ -15,7 +15,7 @@ function [tap_gains,tap_delays]=raytrace_fcn(lat, lon, veh_antenna_h, veh_txpwr_
         "Longitude",infra_lon, ...
         "AntennaHeight",infra_h);
     
-    %% We consider up to "3rd order reflections"
+    % We consider up to "3rd order reflections"
     pm = propagationModel("raytracing", ...
         "Method","sbr", ...
         "MaxNumReflections",3, ...
@@ -60,8 +60,8 @@ function [tap_gains,tap_delays]=raytrace_fcn(lat, lon, veh_antenna_h, veh_txpwr_
     if height(X_table)>K
         [~,C2,X_l]=mcdkmeans(X_table,K,P_th,TXPOWER,0,0,3,200,0,tx,rx);
 
-        %% Reconstruct approximated taps: Hck = sum  (x app. k)
-        %% abs(Hx)*e^(jfix), con k=1..K
+        % Reconstruct approximated taps: Hck = sum  (x app. k)
+        % abs(Hx)*e^(jfix), con k=1..K
         taps = zeros(K,2);
         Hck = zeros(K,1);
         for k=1:K

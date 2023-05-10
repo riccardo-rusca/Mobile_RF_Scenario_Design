@@ -67,13 +67,13 @@ if ~isfile(FINAL_FILENAME)
 			else
 				curr_lat=DATASET_agents{ag}(i,:).latitude_deg;
 				curr_lon=DATASET_agents{ag}(i,:).longitude_deg;
-				%% Call raytrace functtion inside raytrace_fnc.m
+				% Call raytrace functtion inside raytrace_fnc.m
 				[tap_gains,tap_delays]=raytrace_fcn(curr_lat,curr_lon,1.5,23,199.53*1e-3,COMM_FREQUENCY,44.88338,7.33152,30);
    
 				chMatrix{x,total_nodes,i}.iq=tap_gains(tap_gains~=0)';
 				chMatrix{x,total_nodes,i}.delay=tap_delays(find(tap_gains~=0))';
 
-				%% The channel matrix should be duplex (i.e., bi-directional, vehicles->antenna and antenna->vehicles)
+				% The channel matrix should be duplex (i.e., bi-directional, vehicles->antenna and antenna->vehicles)
 				chMatrix{total_nodes,x,i}.iq=chMatrix{x,total_nodes,i}.iq;
 				chMatrix{total_nodes,x,i}.delay=chMatrix{x,total_nodes,i}.delay;
 			end
@@ -92,8 +92,8 @@ end
 %% Array of timestamps
 timestamps = zeros(1,new_matrix_dimension); 
 
-%% How to manage different timestamps for different vehicles?
-%% Workaround: we average them between all the agents/vehicles at each step
+% How to manage different timestamps for different vehicles?
+% Workaround: we average them between all the agents/vehicles at each step
 for ts=1:SAMARCANDA_nppa_min
     timestamps_agents=zeros(1,num_agents);
 	for x=1:num_agents
@@ -118,7 +118,7 @@ for ts=1:SAMARCANDA_nppa_min
 		curr_lat=SAMARCANDA_agents{ag}(ts,:).latitude_deg;
 		curr_lon=SAMARCANDA_agents{ag}(ts,:).longitude_deg;
 	
-		%% Convert to cartesian coordinates
+		% Convert to cartesian coordinates
 		[curr_x,curr_y,curr_z]=geodetic2ecef(wgs84Ellipsoid('meter'),curr_lat,curr_lon,FIXED_ALTITUDE_METERS_ASL);
 	
 		coordinates{x,1,ts}=curr_x;
