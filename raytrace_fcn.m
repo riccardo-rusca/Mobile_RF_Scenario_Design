@@ -1,31 +1,30 @@
 function [tap_gains,tap_delays]=raytrace_fcn(lat, lon, veh_antenna_h, veh_txpwr_dBm, veh_txpwr_watt, frequency, infra_lat, infra_lon, infra_h)
-    %%
+    
     TXPOWER=veh_txpwr_dBm; % In dBm
     TXPOWER_WATT=veh_txpwr_watt; % In W
-    % Tx power set to 23 dBm according to: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9252895
-    % Vodafone/TIM in Italy should use 3.7 GHz
-    % @ 80 MHz according to: https://www.5gitaly.eu/2019/wp-content/uploads/2019/12/libro5G_2019_online.pdf
+    %% Tx power set to 23 dBm according to: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9252895
+    
     tx = txsite("Name", "Car", ...
         "Latitude", lat, ...
         "Longitude", lon, ...
         "TransmitterPower",TXPOWER_WATT, ...
         "TransmitterFrequency",frequency,...
-        "AntennaHeight",veh_antenna_h); % Considering the height of a Volkswagen Golf 8
+        "AntennaHeight",veh_antenna_h); % Insert here the height of the vehicle
     rx = rxsite("Name", "Antenna", ...
         "Latitude", infra_lat, ...
         "Longitude",infra_lon, ...
         "AntennaHeight",infra_h);
     
-    %%
-    % We consider up to "3rd order reflections"
+    %% We consider up to "3rd order reflections"
     pm = propagationModel("raytracing", ...
         "Method","sbr", ...
         "MaxNumReflections",3, ...
         "BuildingsMaterial","concrete", ...
         "TerrainMaterial","concrete");
+		
+	%%% RAY-TRACING
     raysPerfect = raytrace(tx,rx,pm,"Type","power");
 
-    % signalPerfect = sigstrength(rx,tx,pm);
     plPerfect = [raysPerfect{1}.PathLoss];
     phPerfect = [raysPerfect{1}.PhaseShift];
     
@@ -36,20 +35,16 @@ function [tap_gains,tap_delays]=raytrace_fcn(lat, lon, veh_antenna_h, veh_txpwr_
     Gtx_db = 0; % Transmitter antenna gain
     Grx_db = 0; % Receiver antenna gain
     Prx_dBm = Ptx_dBm + Gtx_db + Grx_db - plPerfect - tx.SystemLoss - rx.SystemLoss;
-    % In our practical case Prx_dBm = Ptx_dBm + 0 + 0 - PathLoss - 0 - 0,
-    % thus Prx
     
     hi=zeros(1,length(plPerfect));
     for ipl=1:length(plPerfect)
-    %     disp(num2str((10^((Prx_dBm(ipl)-TXPOWER)/20)))+ "*exp(j*" + num2str(raysPerfect{1}(ipl).PhaseShift) + ")");
         hi(ipl)=(10^((Prx_dBm(ipl)-TXPOWER)/20))*exp((1i)*raysPerfect{1}(ipl).PhaseShift);
     end
     
-    %%
-    % K-means with SED 
-    K=4; % number of taps in Colosseum
+    %%% CLUSTERING
+    K=4; % Insert here the number of taps
     
-    % K-means with MCD 
+    %% K-means with MCD 
     X_table=table();
     X_table.PropagationDelay=[raysPerfect{1}.PropagationDelay].';
     X_table.PathLoss=[raysPerfect{1}.PathLoss].';
@@ -62,11 +57,11 @@ function [tap_gains,tap_delays]=raytrace_fcn(lat, lon, veh_antenna_h, veh_txpwr_
     X_table.hi(:)=hi';
     P_th = -89.1;
 
-    if height(X_table)>4
+    if height(X_table)>K
         [~,C2,X_l]=mcdkmeans(X_table,K,P_th,TXPOWER,0,0,3,200,0,tx,rx);
 
-        % Reconstruct approximated taps: Hck = sum  (x app. k)
-        % abs(Hx)*e^(jfix), con k=1..K
+        %% Reconstruct approximated taps: Hck = sum  (x app. k)
+        %% abs(Hx)*e^(jfix), con k=1..K
         taps = zeros(K,2);
         Hck = zeros(K,1);
         for k=1:K
@@ -89,8 +84,7 @@ function [tap_gains,tap_delays]=raytrace_fcn(lat, lon, veh_antenna_h, veh_txpwr_
         taps = array2table(taps,'VariableNames',colNames);
     end
     
-    %% 
-    % CIR re-sampling algorithm
+    %% CIR re-sampling algorithm
     ds = 10e-9; % Sampling interval in s 
     fs = 1/ds; % FIR filters sampling frequency in Hz
     N = 512; % Number of FIR filters
@@ -106,8 +100,7 @@ function [tap_gains,tap_delays]=raytrace_fcn(lat, lon, veh_antenna_h, veh_txpwr_
         tap_gains(i) = tap_gains(i) + taps(k,:).h;
     end
     
-    %%
-    % Function for MCD K-means algorithm
+    %% Function for MCD K-means algorithm
     function [idx,c_ik,X_l]=mcdkmeans(X,K,P_th,Ptx_dB,Gtx_db,Grx_db,zeta,Nrep,tshold,tx,rx)
         Prx_dBm_MCD = Ptx_dB + Gtx_db + Grx_db - X.PathLoss - tx.SystemLoss - rx.SystemLoss;
         X.rxpwr = Prx_dBm_MCD;
