@@ -24,7 +24,7 @@ If you encounter any compatibility issues with MATLAB versions greater than R202
 If you want to use the generic code inside [*raytrace_mobile.m*](/raytrace_mobile.m) (i.e., not the one for the already configured scenario with the *SAMARCANDA* dataset), before you can launch the code and generate your own scenario, you **need** to properly customize the code, inserting at least the required parameters/code in the line followed by a comment with *{INPUT}*.
 
 ### SAMARCANDA Mobility Scenario
-Inside **SAMARCANDA_Scenario** folder, you can find all the files needed to create a *Mobile RF Scenario* starting from the *SAMARCANDA* dataset available [here](https://github.com/francescoraves483/ms-van3t-CAM2CEM/raw/master/src/gps-tc/examples/GPS-Traces-Sample/SAMARCANDA_dataset.csv).  
+Inside **SAMARCANDA_Scenario** folder, you can find all the files needed to create a *Mobile RF Scenario* starting from the *SAMARCANDA* dataset available [here](https://github.com/francescoraves483/ms-van3t-CAM2CEM/raw/master/src/gps-tc/examples/GPS-Traces-Sample/SAMARCANDA_dataset.csv). The *SAMARCANDA* dataset has been presented in [this Elsevier paper](https://www.sciencedirect.com/science/article/abs/pii/S2214209622000444).
 
 More in detail:
 * [*SAMARCANDA_area.png*](/SAMARCANDA_Scenario/SAMARCANDA_area.png) &rarr; contains a picture showing the SAMARCANDA traces of 19 vehicles on a map with 1 km^2 area highlighted in blue.
